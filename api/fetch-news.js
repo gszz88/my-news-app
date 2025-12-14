@@ -7,8 +7,7 @@ const RSS_FEEDS = [
     { name: '新浪科技', url: 'https://rss.sina.com.cn/tech/rollnews.xml' },
     { name: '36氪', url: 'https://36kr.com/feed' },
     { name: '少数派', url: 'https://sspai.com/feed' },
-    { name: '纽约时报中文网', url: 'https://cn.nytimes.com/rss/' },
-    { name: 'MSN 中国', url: 'https://rsshub.app/msn/zh-cn' } // 也加入了MSN
+    { name: '纽约时报中文网', url: 'https://cn.nytimes.com/rss/' }
 ];
 
 // 这是Vercel云函数的入口点
