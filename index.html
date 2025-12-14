@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的个性化新闻</title>
+    <style>
+        /* 样式代码和之前完全一样，保持美观 */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
+        header { text-align: center; margin-bottom: 30px; }
+        header h1 { color: #1a1a1a; font-size: 2.5em; }
+        header p { color: #666; font-size: 1.1em; }
+        #news-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .news-card { background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer; display: flex; flex-direction: column; }
+        .news-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
+        .news-card-content { padding: 20px; flex-grow: 1; }
+        .news-card-title { font-size: 1.2em; font-weight: bold; color: #000; margin: 0 0 10px 0; line-height: 1.4; }
+        .news-card-description { font-size: 0.9em; color: #555; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 15px; }
+        .news-card-footer { padding: 10px 20px; background-color: #fafafa; border-top: 1px solid #eee; font-size: 0.8em; color: #888; display: flex; justify-content: space-between; align-items: center; }
+        #loader { text-align: center; font-size: 1.2em; padding: 50px; }
+        #controls { text-align: center; margin-bottom: 20px; }
+        #reset-btn { background-color: #ff4d4f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 0.9em; transition: background-color 0.2s; }
+        #reset-btn:hover { background-color: #d9363e; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>今日热点</h1>
+        <p>一个为您量身打造的新闻聚合页面</p>
+    </header>
+
+    <div id="controls">
+        <button id="reset-btn" title="清除所有点击记录，恢复默认排序">重置偏好</button>
+    </div>
+
+    <div id="loader">正在从云端获取最新新闻...</div>
+    <div id="news-container"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const newsContainer = document.getElementById('news-container');
+        const loader = document.getElementById('loader');
+        const resetButton = document.getElementById('reset-btn');
+
+        // --- 核心功能：智能推荐 (与之前完全相同) ---
+        const getPreferences = () => JSON.parse(localStorage.getItem('newsPreferences') || '{}');
+        const savePreferences = (prefs) => localStorage.setItem('newsPreferences', JSON.stringify(prefs));
+
+        const updatePreferences = (article) => {
+            const prefs = getPreferences();
+            const tags = article.categories || [];
+            tags.forEach(tag => {
+                prefs[tag] = (prefs[tag] || 0) + 1;
+            });
+            savePreferences(prefs);
+        };
+
+        const calculateArticleScore = (article, prefs) => {
+            let score = 0;
+            const tags = article.categories || [];
+            tags.forEach(tag => {
+                score += prefs[tag] || 0;
+            });
+            const hoursOld = (new Date() - new Date(article.isoDate)) / 3600000;
+            score += Math.max(0, 10 - hoursOld / 6); // 时间衰减，60小时内有加分
+            return score;
+        };
+
+        // --- 核心功能：新闻获取与展示 (已更新) ---
+        const fetchAndDisplayNews = async () => {
+            loader.style.display = 'block';
+            newsContainer.innerHTML = '';
+
+            try {
+                // **重大改变：** 现在我们只请求自己的后端API，它会完成所有聚合工作
+                const response = await fetch('/api/fetch-news');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const allArticles = await response.json();
+
+                // --- 智能排序 (与之前类似) ---
+                const prefs = getPreferences();
+                allArticles.forEach(article => {
+                    article.score = calculateArticleScore(article, prefs);
+                });
+                
+                allArticles.sort((a, b) => b.score - a.score);
+
+                // 渲染到页面
+                displayArticles(allArticles);
+
+            } catch (error) {
+                loader.textContent = '新闻加载失败，请检查网络或稍后再试。';
+                console.error("加载新闻时出错:", error);
+            } finally {
+                loader.style.display = 'none';
+            }
+        };
+
+        const displayArticles = (articles) => {
+            if (articles.length === 0) {
+                newsContainer.innerHTML = '<p>暂时没有获取到新闻。</p>';
+                return;
+            }
+            articles.forEach(article => {
+                const card = document.createElement('div');
+                card.className = 'news-card';
+                
+                card.innerHTML = `
+                    <div class="news-card-content">
+                        <h3 class="news-card-title">${article.title}</h3>
+                        <p class="news-card-description">${article.contentSnippet || ''}</p>
+                    </div>
+                    <div class="news-card-footer">
+                        <span>${article.sourceName}</span>
+                        <span>${new Date(article.isoDate).toLocaleString()}</span>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => {
+                    updatePreferences(article);
+                    window.open(article.link, '_blank');
+                });
+
+                newsContainer.appendChild(card);
+            });
+        };
+
+        // --- 事件绑定 ---
+        resetButton.addEventListener('click', () => {
+            if (confirm('您确定要清空所有阅读偏好吗？页面将刷新并恢复默认排序。')) {
+                localStorage.removeItem('newsPreferences');
+                location.reload();
+            }
+        });
+
+        fetchAndDisplayNews();
+    });
+    </script>
+</body>
+</html>
