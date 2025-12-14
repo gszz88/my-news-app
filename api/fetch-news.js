@@ -4,7 +4,10 @@ const parser = new Parser();
 
 // 定义我们要抓取的新闻源
 const RSS_FEEDS = [
-{ name: '路透社-国际要闻', url: 'http://feeds.reuters.com/reuters/worldNews' },
+{ name: '新浪科技', url: 'https://rss.sina.com.cn/tech/rollnews.xml' },
+    { name: '36氪', url: 'https://36kr.com/feed' },
+    { name: '少数派', url: 'https://sspai.com/feed' },
+    { name: '纽约时报中文网', url: 'https://cn.nytimes.com/rss/' }
 ];
 
 // 这是Vercel云函数的入口点
