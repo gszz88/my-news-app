@@ -5,22 +5,133 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的个性化新闻</title>
     <style>
-        /* 样式代码和之前完全一样，保持美观 */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
-        header { text-align: center; margin-bottom: 30px; }
-        header h1 { color: #1a1a1a; font-size: 2.5em; }
-        header p { color: #666; font-size: 1.1em; }
-        #news-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
-        .news-card { background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer; display: flex; flex-direction: column; }
-        .news-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
-        .news-card-content { padding: 20px; flex-grow: 1; }
-        .news-card-title { font-size: 1.2em; font-weight: bold; color: #000; margin: 0 0 10px 0; line-height: 1.4; }
-        .news-card-description { font-size: 0.9em; color: #555; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 15px; }
-        .news-card-footer { padding: 10px 20px; background-color: #fafafa; border-top: 1px solid #eee; font-size: 0.8em; color: #888; display: flex; justify-content: space-between; align-items: center; }
-        #loader { text-align: center; font-size: 1.2em; padding: 50px; }
-        #controls { text-align: center; margin-bottom: 20px; }
-        #reset-btn { background-color: #ff4d4f; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 0.9em; transition: background-color 0.2s; }
-        #reset-btn:hover { background-color: #d9363e; }
+        /* --- 全局变量与基础样式 --- */
+        :root {
+            --primary-color: #007aff;
+            --background-color: #f4f6f9;
+            --card-background: #ffffff;
+            --text-color: #2c3e50;
+            --subtle-text-color: #7f8c8d;
+            --border-color: #e8e8e8;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 24px;
+            color: var(--text-color);
+        }
+
+        /* --- 头部样式 --- */
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 24px;
+        }
+        header h1 {
+            color: var(--text-color);
+            font-size: 2.8em;
+            font-weight: 700;
+            margin: 0;
+        }
+        header p {
+            color: var(--subtle-text-color);
+            font-size: 1.2em;
+            margin-top: 8px;
+        }
+
+        /* --- 主容器 --- */
+        #news-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* --- 新闻卡片样式 (全新设计) --- */
+        .news-card {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px var(--shadow-color);
+            border-color: var(--primary-color);
+        }
+
+        .news-card-content {
+            padding: 24px;
+            flex-grow: 1;
+        }
+
+        .news-card-title {
+            font-size: 1.25em;
+            font-weight: 600;
+            color: var(--text-color);
+            margin: 0 0 12px 0;
+            line-height: 1.4;
+        }
+        
+        .news-card-description {
+            font-size: 0.95em;
+            color: var(--subtle-text-color);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;  
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .news-card-footer {
+            padding: 12px 24px;
+            background-color: #fafbfd;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.85em;
+            color: var(--subtle-text-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* --- 加载与工具栏样式 --- */
+        #loader {
+            text-align: center;
+            font-size: 1.2em;
+            padding: 50px;
+            color: var(--subtle-text-color);
+        }
+        
+        #controls {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        #reset-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        #reset-btn:hover {
+            background-color: #c0392b;
+        }
     </style>
 </head>
 <body>
@@ -38,105 +149,91 @@
     <div id="news-container"></div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const newsContainer = document.getElementById('news-container');
-        const loader = document.getElementById('loader');
-        const resetButton = document.getElementById('reset-btn');
+        // JavaScript 部分完全保持不变，无需修改
+        document.addEventListener('DOMContentLoaded', () => {
+            const newsContainer = document.getElementById('news-container');
+            const loader = document.getElementById('loader');
+            const resetButton = document.getElementById('reset-btn');
 
-        // --- 核心功能：智能推荐 (与之前完全相同) ---
-        const getPreferences = () => JSON.parse(localStorage.getItem('newsPreferences') || '{}');
-        const savePreferences = (prefs) => localStorage.setItem('newsPreferences', JSON.stringify(prefs));
+            const getPreferences = () => JSON.parse(localStorage.getItem('newsPreferences') || '{}');
+            const savePreferences = (prefs) => localStorage.setItem('newsPreferences', JSON.stringify(prefs));
 
-        const updatePreferences = (article) => {
-            const prefs = getPreferences();
-            const tags = article.categories || [];
-            tags.forEach(tag => {
-                prefs[tag] = (prefs[tag] || 0) + 1;
-            });
-            savePreferences(prefs);
-        };
-
-        const calculateArticleScore = (article, prefs) => {
-            let score = 0;
-            const tags = article.categories || [];
-            tags.forEach(tag => {
-                score += prefs[tag] || 0;
-            });
-            const hoursOld = (new Date() - new Date(article.isoDate)) / 3600000;
-            score += Math.max(0, 10 - hoursOld / 6); // 时间衰减，60小时内有加分
-            return score;
-        };
-
-        // --- 核心功能：新闻获取与展示 (已更新) ---
-        const fetchAndDisplayNews = async () => {
-            loader.style.display = 'block';
-            newsContainer.innerHTML = '';
-
-            try {
-                // **重大改变：** 现在我们只请求自己的后端API，它会完成所有聚合工作
-                const response = await fetch('/api/fetch-news');
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const allArticles = await response.json();
-
-                // --- 智能排序 (与之前类似) ---
+            const updatePreferences = (article) => {
                 const prefs = getPreferences();
-                allArticles.forEach(article => {
-                    article.score = calculateArticleScore(article, prefs);
+                const tags = article.categories || [];
+                tags.forEach(tag => {
+                    prefs[tag] = (prefs[tag] || 0) + 1;
                 });
-                
-                allArticles.sort((a, b) => b.score - a.score);
+                savePreferences(prefs);
+            };
 
-                // 渲染到页面
-                displayArticles(allArticles);
-
-            } catch (error) {
-                loader.textContent = '新闻加载失败，请检查网络或稍后再试。';
-                console.error("加载新闻时出错:", error);
-            } finally {
-                loader.style.display = 'none';
-            }
-        };
-
-        const displayArticles = (articles) => {
-            if (articles.length === 0) {
-                newsContainer.innerHTML = '<p>暂时没有获取到新闻。</p>';
-                return;
-            }
-            articles.forEach(article => {
-                const card = document.createElement('div');
-                card.className = 'news-card';
-                
-                card.innerHTML = `
-                    <div class="news-card-content">
-                        <h3 class="news-card-title">${article.title}</h3>
-                        <p class="news-card-description">${article.contentSnippet || ''}</p>
-                    </div>
-                    <div class="news-card-footer">
-                        <span>${article.sourceName}</span>
-                        <span>${new Date(article.isoDate).toLocaleString()}</span>
-                    </div>
-                `;
-
-                card.addEventListener('click', () => {
-                    updatePreferences(article);
-                    window.open(article.link, '_blank');
+            const calculateArticleScore = (article, prefs) => {
+                let score = 0;
+                const tags = article.categories || [];
+                tags.forEach(tag => {
+                    score += prefs[tag] || 0;
                 });
+                const hoursOld = (new Date() - new Date(article.isoDate)) / 3600000;
+                score += Math.max(0, 10 - hoursOld / 6);
+                return score;
+            };
 
-                newsContainer.appendChild(card);
+            const fetchAndDisplayNews = async () => {
+                loader.style.display = 'block';
+                newsContainer.innerHTML = '';
+                try {
+                    const response = await fetch('/api/fetch-news');
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const allArticles = await response.json();
+                    const prefs = getPreferences();
+                    allArticles.forEach(article => {
+                        article.score = calculateArticleScore(article, prefs);
+                    });
+                    allArticles.sort((a, b) => b.score - a.score);
+                    displayArticles(allArticles);
+                } catch (error) {
+                    loader.textContent = '新闻加载失败，请检查网络或稍后再试。';
+                    console.error("加载新闻时出错:", error);
+                } finally {
+                    loader.style.display = 'none';
+                }
+            };
+
+            const displayArticles = (articles) => {
+                if (articles.length === 0) {
+                    newsContainer.innerHTML = '<p>暂时没有获取到新闻。</p>';
+                    return;
+                }
+                articles.forEach(article => {
+                    const card = document.createElement('div');
+                    card.className = 'news-card';
+                    card.innerHTML = `
+                        <div class="news-card-content">
+                            <h3 class="news-card-title">${article.title}</h3>
+                            <p class="news-card-description">${article.contentSnippet || ''}</p>
+                        </div>
+                        <div class="news-card-footer">
+                            <span>${article.sourceName}</span>
+                            <span>${new Date(article.isoDate).toLocaleString()}</span>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => {
+                        updatePreferences(article);
+                        window.open(article.link, '_blank');
+                    });
+                    newsContainer.appendChild(card);
+                });
+            };
+
+            resetButton.addEventListener('click', () => {
+                if (confirm('您确定要清空所有阅读偏好吗？页面将刷新并恢复默认排序。')) {
+                    localStorage.removeItem('newsPreferences');
+                    location.reload();
+                }
             });
-        };
 
-        // --- 事件绑定 ---
-        resetButton.addEventListener('click', () => {
-            if (confirm('您确定要清空所有阅读偏好吗？页面将刷新并恢复默认排序。')) {
-                localStorage.removeItem('newsPreferences');
-                location.reload();
-            }
+            fetchAndDisplayNews();
         });
-
-        fetchAndDisplayNews();
-    });
     </script>
 </body>
 </html>
